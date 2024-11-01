@@ -17,7 +17,6 @@ namespace Conway // Note: actual namespace depends on the project name.
 			};
 			int generation = 16;
 			int[,] expected = GetGeneration(cells, generation);
-			Console.WriteLine($"ARRAY DE MAIN: ");
 			for (int i = 0; i < expected.GetLength(0); i++)
 			{
 				for (int j = 0; j < expected.GetLength(1); j++)
@@ -39,64 +38,6 @@ namespace Conway // Note: actual namespace depends on the project name.
 			{
 				return cells;
 			}
-			//Si la generacion es tan solo 1, me pasa el primer test sin ningún tipo de problema.
-			if (generation == 1)
-			{
-				for (int i = 0; i < expansionBoard.GetLength(0); i++)
-				{
-					for (int j = 0; j < expansionBoard.GetLength(1); j++)
-					{
-						if (i == 0 && j == 0) //Esquina superior izquierda [0,0]
-						{
-							expected[i, j] = ValueCornerTopLeftCells(cells, i, j);
-						}
-
-						if (i == expansionBoard.GetLength(0) - 1 && j == 0) // Esquina inferior izquierda (en este caso [2,0] - [ultima fila del array,0])
-						{
-							expected[i, j] = ValueCornerDownLeftCells(cells, i, j);
-						}
-
-						if (i == 0 && j == expansionBoard.GetLength(1) - 1) // Esquina superior derecha (en este caso [0,2] - [0,ultima columna del array])
-						{
-							expected[i, j] = ValueCornerTopRightCells(cells, i, j);
-						}
-
-						if (i == expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1) // Esquina inferior derecha (en este caso [2,2] - [ultima fila,ultima columna])
-						{
-							expected[i, j] = ValueCornerDownRightCells(cells, i, j);
-						}
-
-						if (i == 0 && j != expansionBoard.GetLength(1) - 1 && i == 0 && j != 0)
-						{
-							expected[i, j] = ValueTopDifferentCorners(cells, i, j); // Valor de la linea superior quitando las esquinas [0,1] en este caso [0, todas las columnas entre 0 y la ultima]
-						}
-
-						if (i == expansionBoard.GetLength(0) - 1 && j != 0 && i == expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1)
-						{
-							expected[i, j] = ValueBottomDifferentCorners(cells, i, j); // Valor de la linea inferior quitando las esquinas [2,1] en este caso
-						}
-
-						if (i != 0 && j == 0 && i != expansionBoard.GetLength(0) - 1 && j == 0)
-						{
-							expected[i, j] = ValueLeftDifferentCorners(cells, i, j);
-						}
-
-						if (i != 0 && j == expansionBoard.GetLength(1) - 1 && i != expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1)
-						{
-							expected[i, j] = ValueRightDifferentCorners(expansionBoard, i, j);
-						}
-
-						if (i != 0 && j != 0 && i != expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1)
-						{
-							expected[i, j] = ValueMidBoardDifferentCornersAndDifferentSides(cells, i, j);
-						}
-					}
-				}
-				return expected;
-			}
-
-
-			board = cells;
 			while (countGeneration < generation)
 			{
 				board = expansionBoard;
@@ -116,117 +57,149 @@ namespace Conway // Note: actual namespace depends on the project name.
 				}
 
 				board = new int[expansionBoard.GetLength(0), expansionBoard.GetLength(1)]; //Agrandamos el contenido de Board para que sea el mismo que expansion. Y se llena de 0.
-
 				/*Rellenamos el array de board con el contenido de expansionBoard, aplicando las reglas de ConwayLife.
 				 De esta forma rellenamos el array board pasando el contenido de expansionBoard.*/
 				for (int i = 0; i < board.GetLength(0); i++)
 				{
 					for (int j = 0; j < board.GetLength(1); j++)
 					{
-						if (i == 0 && j == 0) //Esquina superior izquierda [0,0]
-						{
-							board[i, j] = ValueCornerTopLeftCells(expansionBoard, i, j);
-						}
+						int neighbors = CountNeighbors(expansionBoard, i, j);
 
-						if (i == expansionBoard.GetLength(0) - 1 && j == 0) // Esquina inferior izquierda (en este caso [2,0] )
+						if (expansionBoard[i, j] == 1) // Célula viva
 						{
-							board[i, j] = ValueCornerDownLeftCells(expansionBoard, i, j);
+							if (neighbors < 2 || neighbors > 3)
+								board[i, j] = 0; // Muere
+							else
+								board[i, j] = 1; // Sobrevive
 						}
-
-						if (i == 0 && j == expansionBoard.GetLength(1) - 1) // Esquina superior derecha (en este caso [0,7])
+						else // Célula muerta
 						{
-							board[i, j] = ValueCornerTopRightCells(expansionBoard, i, j);
-						}
-
-						if (i == expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1) // Esquina inferior derecha (en este caso [2,7])
-						{
-							board[i, j] = ValueCornerDownRightCells(expansionBoard, i, j);
-						}
-
-						if (i == 0 && j != expansionBoard.GetLength(1) - 1 && i == 0 && j != 0)
-						{
-							board[i, j] = ValueTopDifferentCorners(expansionBoard, i, j); // Valor de la linea superior quitando las esquinas en este caso desde [0,1] hasta [0,n-1]
-						}
-
-						if (i == expansionBoard.GetLength(0) - 1 && j != 0 && i == expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1) // Valor de la linea inferior quitando las esquinas en este caso [2,1] hasta [2,n-1];
-						{
-							board[i, j] = ValueBottomDifferentCorners(expansionBoard, i, j);
-						}
-
-						if (i != 0 && j == 0 && i != expansionBoard.GetLength(0) - 1 && j == 0) // Valores para [1,0] hasta [n-1,0]
-						{
-							board[i, j] = ValueLeftDifferentCorners(expansionBoard, i, j);
-						}
-
-						if (i != 0 && j == expansionBoard.GetLength(1) - 1 && i != expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1)// Valores para la ultima columna
-						{
-							board[i, j] = ValueRightDifferentCorners(expansionBoard, i, j);
-						}
-
-						if (i != 0 && j != 0 && i != expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1) // Valores para medio del tablero
-						{
-							board[i, j] = ValueMidBoardDifferentCornersAndDifferentSides(expansionBoard, i, j);
+							if (neighbors == 3)
+								board[i, j] = 1; // Se vuelve viva
 						}
 					}
 				}
-				expansionBoard = board;
-				/*A continuación, trabajamos sobre el array Board para observar la primera y ultima fila junto con la primera y ultima columna.
-				 En caso de que no exista ninguna celula viva (valor1) se eliminan.*/
 
-				bool lessRowBoard = false;
-				bool lessColBoard = false;
+				expansionBoard = board;
+				countGeneration++;
+			}
+
+			bool reduced;
+			do
+			{
+				reduced = false;
+				int countColumnFirst = 0;
+				int countColumnLast = 0;
+				int countRowUp = 0;
+				int countRowDown = 0;
+
+				// Verificar si la primera o última fila está llena de ceros
 				for (int i = 0; i < board.GetLength(0); i++)
 				{
-					//Comprobamos la primera fila y la última.
-					if (board[i, 0] == 0 || board[i, board.GetLength(1) - 1] == 0)
-					{
-						lessRowBoard = true;
-						break;
-					}
+					if (board[i, 0] == 0) countRowUp++;
+					if (board[i, board.GetLength(1) - 1] == 0) countRowDown++;
 				}
 
+				// Verificar si la primera o última columna está llena de ceros
 				for (int j = 0; j < board.GetLength(1); j++)
 				{
-					//Comprobamos la primera columna y la ultima
-					if (board[0, j] == 0 || board[board.GetLength(0) - 1, j] == 0)
-					{
-						lessColBoard = true;
-						break;
-					}
+					if (board[0, j] == 0) countColumnFirst++;
+					if (board[board.GetLength(0) - 1, j] == 0) countColumnLast++;
 				}
 
-				if (lessRowBoard) //Si es true, significa que contiene valores 0 y es por ello que quitamos 2 a las filas.
+				// Eliminar filas si están llenas de ceros
+				if (countRowUp == board.GetLength(0))
 				{
-					var temporalBoard = new int[board.GetLength(0) - 2, board.GetLength(1)];
-					//Pasamos el contenido del nuevo array creado de forma temporal al array de board y al finalizar igualamos su contenido.
-
-					for (int i = 0; i < temporalBoard.GetLength(0) - 1; i++)
+					// Reduce el tamaño del array temporalmente
+					int[,] temporalArray = new int[board.GetLength(0) - 1, board.GetLength(1)];
+					for (int i = 1; i < board.GetLength(0); i++)
 					{
-						for (int j = 0; j < temporalBoard.GetLength(1); j++)
+						for (int j = 0; j < board.GetLength(1); j++)
 						{
-							temporalBoard[i + 1, j] = board[i, j];
+							if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
+							{
+								temporalArray[i - 1, j] = board[i, j];
+							}
 						}
 					}
-					board = temporalBoard;
+					board = temporalArray;
+					reduced = true;
 				}
-
-				if (lessColBoard) //Hacemos exactamente lo mismo con las columnas
+				if (countRowDown == board.GetLength(0))
 				{
-					var temporalBoard = new int[board.GetLength(0), board.GetLength(1) - 2];
-
-					for (int i = 0; i < temporalBoard.GetLength(0); i++)
+					int[,] temporalArray = new int[board.GetLength(0) - 1, board.GetLength(1)];
+					for (int i = 0; i < board.GetLength(0) - 1; i++)
 					{
-						for (int j = 0; j < temporalBoard.GetLength(1) - 1; j++)
+						for (int j = 0; j < board.GetLength(1); j++)
 						{
-							temporalBoard[i, j + 1] = board[i, j];
+							if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
+							{
+								temporalArray[i, j] = board[i, j];
+							}
 						}
 					}
-					board = temporalBoard;
+					board = temporalArray;
+					reduced = true;
 				}
-				countGeneration++;
 
-			}
+				// Eliminar columnas si están llenas de ceros
+				if (countColumnFirst == board.GetLength(1))
+				{
+					int[,] temporalArray = new int[board.GetLength(0), board.GetLength(1) - 1];
+					for (int i = 0; i < board.GetLength(0); i++)
+					{
+						for (int j = 1; j < board.GetLength(1); j++)
+						{
+							if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
+							{
+								temporalArray[i, j - 1] = board[i, j];
+							}
+						}
+					}
+					board = temporalArray;
+					reduced = true;
+				}
+				if (countColumnLast == board.GetLength(1))
+				{
+					int[,] temporalArray = new int[board.GetLength(0), board.GetLength(1) - 1];
+					for (int i = 0; i < board.GetLength(0); i++)
+					{
+						for (int j = 0; j < board.GetLength(1) - 1; j++)
+						{
+							if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
+							{
+								temporalArray[i, j] = board[i, j];
+							}
+						}
+					}
+					board = temporalArray;
+					reduced = true;
+				}
+
+			} while (reduced);
+
 			return board;
+		}
+		private static int CountNeighbors(int[,] board, int row, int col)
+		{
+			int count = 0;
+			int rows = board.GetLength(0);
+			int cols = board.GetLength(1);
+
+			for (int i = -1; i <= 1; i++)
+			{
+				for (int j = -1; j <= 1; j++)
+				{
+					if (i == 0 && j == 0) continue; // Ignora la célula misma
+					int newRow = row + i;
+					int newCol = col + j;
+					if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols)
+					{
+						count += board[newRow, newCol];
+					}
+				}
+			}
+			return count;
 		}
 
 		public static int ValueCornerTopLeftCells(int[,] expansionBoard, int valueI, int valueJ)
@@ -446,173 +419,3 @@ namespace Conway // Note: actual namespace depends on the project name.
 		}
 	}
 }
-/*
- * bool needExpansionH = false;
-				bool needExpansionV = false;
-
-				for (int i = 0; i < testBoard.GetLength(0); i++)
-				{
-					if ((testBoard[i, 0] == 1) || (testBoard[i, expansionBoard.GetLength(1) - 1] == 1))
-					{
-						needExpansionH = true;
-						break;
-					}
-					if (needExpansionH) break;
-				}
-
-				for (int j = 0; j < expansionBoard.GetLength(1); j++)
-				{
-					if ((testBoard[0, j] == 1) || (testBoard[expansionBoard.GetLength(0) - 1, j] == 1))
-					{
-						needExpansionV = true;
-						break;
-					}
-					if (needExpansionV) break;
-				}
-
-				if (needExpansionH)
-				{
-					expansionBoard = new int[expansionBoard.GetLength(0) + 2, expansionBoard.GetLength(1)];
-				}
-				else
-				{
-					expansionBoard = new int[expansionBoard.GetLength(0), expansionBoard.GetLength(1)];
-				}
-
-				if (needExpansionV)
-				{
-					expansionBoard = new int[expansionBoard.GetLength(0), expansionBoard.GetLength(1) + 2];
-				}
-				else
-				{
-					expansionBoard = new int[expansionBoard.GetLength(0), expansionBoard.GetLength(1)];
-				}
-
-				for (int i = 0; i < expansionBoard.GetLength(0); i++)
-				{
-					for (int j = 0; j < expansionBoard.GetLength(1); j++)
-					{
-						if (i != 0 && j != 0 && i != expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1)
-						{
-							expansionBoard[i, j] = testBoard[i - 1, j - 1];
-						}
-
-					}
-				}
-				Console.WriteLine($"VALORES DE DENTRO DEL ARRAY EXPANSIONBOARD DESPUES DE HABERLO EXPANDIDO");
-				for (int i = 0; i < expansionBoard.GetLength(0); i++)
-				{
-					for (int j = 0; j < expansionBoard.GetLength(1); j++)
-					{
-						Console.Write(expansionBoard[i,j]+" ");
-                    }
-                    Console.WriteLine();
-                }
-
-						testBoard = expansionBoard;
-				//Comprobamos los valores de las esquinas etc.
-				for (int i = 0; i < expansionBoard.GetLength(0); i++)
-				{
-					for (int j = 0; j < expansionBoard.GetLength(1); j++)
-					{
-						if (i == 0 && j == 0) //Esquina superior izquierda [0,0]
-						{
-							testBoard[i, j] = ValueCornerTopLeftCells(expansionBoard, i, j, testBoard);
-						}
-
-						if (i == expansionBoard.GetLength(0) - 1 && j == 0) // Esquina inferior izquierda (en este caso [2,0] )
-						{
-							testBoard[i, j] = ValueCornerDownLeftCells(expansionBoard, i, j, testBoard);
-						}
-
-						if (i == 0 && j == expansionBoard.GetLength(1) - 1) // Esquina superior derecha (en este caso [0,2])
-						{
-							testBoard[i, j] = ValueCornerTopRightCells(expansionBoard, i, j, testBoard);
-						}
-
-						if (i == expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1) // Esquina inferior derecha (en este caso [2,2])
-						{
-							testBoard[i, j] = ValueCornerDownRightCells(expansionBoard, i, j, testBoard);
-						}
-						if (i == 0 && j != expansionBoard.GetLength(1) - 1 && i == 0 && j != 0)
-						{
-							testBoard[i, j] = ValueTopDifferentCorners(expansionBoard, i, j, testBoard); // Valor de la linea superior quitando las esquinas [0,1] en este caso
-						}
-
-						if (i == expansionBoard.GetLength(0) - 1 && j != 0 && i == expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1)
-						{
-							testBoard[i, j] = ValueBottomDifferentCorners(expansionBoard, i, j, testBoard); // Valor de la linea inferior quitando las esquinas [2,1] en este caso
-						}
-
-						if (i != 0 && j == 0 && i != expansionBoard.GetLength(0) - 1 && j == 0)
-						{
-							testBoard[i, j] = ValueLeftDifferentCorners(expansionBoard, i, j, testBoard);
-						}
-
-						if (i != 0 && j == expansionBoard.GetLength(1) - 1 && i != expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1)
-						{
-							testBoard[i, j] = ValueRightDifferentCorners(expansionBoard, i, j, testBoard);
-						}
-
-						if (i != 0 && j != 0 && i != expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1)
-						{
-							testBoard[i, j] = ValueMidBoardDifferentCornersAndDifferentSides(expansionBoard, i, j, testBoard);
-						}
-					}
-				}
-				
-				Console.WriteLine($"CONTENIDO DE EXPANSIONBOARD:");
-				for (int i = 0; i < expansionBoard.GetLength(0); i++)
-				{
-					for (int j = 0; j < expansionBoard.GetLength(1); j++)
-					{
-						Console.Write(expansionBoard[i, j] + " ");
-					}
-					Console.WriteLine();
-				}
-				Console.WriteLine($"CONTENIDO DE TESTBOARD:");
-
-				for (int i = 0; i < testBoard.GetLength(0); i++)
-				{
-					for (int j = 0; j < testBoard.GetLength(1); j++)
-					{
-						Console.Write(testBoard[i, j] + " ");
-					}
-					Console.WriteLine();
-				}
-
-				countGeneration++;
-
-				for (int i = 0; i < expansionBoard.GetLength(0); i++)
-				{
-					for (int j = 0; j < expansionBoard.GetLength(1); j++)
-					{
-						if (i == 0 && j != expansionBoard.GetLength(1) - 1 && i == 0 && j != 0)
-						{
-							testBoard[i, j] = ValueTopDifferentCorners(expansionBoard, i, j, testBoard); // Valor de la linea superior quitando las esquinas [0,1] en este caso
-						}
-
-						if (i == expansionBoard.GetLength(0) - 1 && j != 0 && i == expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1)
-						{
-							testBoard[i, j] = ValueBottomDifferentCorners(expansionBoard, i, j, testBoard); // Valor de la linea inferior quitando las esquinas [2,1] en este caso
-						}
-
-						if (i != 0 && j == 0 && i != expansionBoard.GetLength(0) - 1 && j == 0)
-						{
-							testBoard[i, j] = ValueLeftDifferentCorners(expansionBoard, i, j, testBoard);
-						}
-
-						if (i != 0 && j == expansionBoard.GetLength(1) - 1 && i != expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1)
-						{
-							testBoard[i, j] = ValueRightDifferentCorners(expansionBoard, i, j, testBoard);
-						}
-
-						if (i != 0 && j != 0 && i != expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1)
-						{
-							testBoard[i, j] = ValueMidBoardDifferentCornersAndDifferentSides(expansionBoard, i, j, testBoard);
-						}
-					}
-				}
-
-
- */
