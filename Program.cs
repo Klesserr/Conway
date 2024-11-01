@@ -11,11 +11,11 @@ namespace Conway // Note: actual namespace depends on the project name.
 		{
 			int[,] cells =
 			{
-			{1,1,1,0,0,0,1,0},
-			{1,0,0,0,0,0,0,1},
-			{0,1,0,0,0,1,1,1}
+			{1,0,0},
+			{0,1,1},
+			{1,1,1}
 			};
-			int generation = 16;
+			int generation = 1;
 			int[,] expected = GetGeneration(cells, generation);
 			for (int i = 0; i < expected.GetLength(0); i++)
 			{
@@ -63,23 +63,55 @@ namespace Conway // Note: actual namespace depends on the project name.
 				{
 					for (int j = 0; j < board.GetLength(1); j++)
 					{
-						int neighbors = CountNeighbors(expansionBoard, i, j);
+						if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
+						{
+							if (i == 0 && j == 0) //Esquina superior izquierda [0,0]
+							{
+								board[i, j] = ValueCornerTopLeftCells(expansionBoard, i, j);
+							}
 
-						if (expansionBoard[i, j] == 1) // Célula viva
-						{
-							if (neighbors < 2 || neighbors > 3)
-								board[i, j] = 0; // Muere
-							else
-								board[i, j] = 1; // Sobrevive
-						}
-						else // Célula muerta
-						{
-							if (neighbors == 3)
-								board[i, j] = 1; // Se vuelve viva
+							if (i == expansionBoard.GetLength(0) - 1 && j == 0) // Esquina inferior izquierda (en este caso [2,0] )
+							{
+								board[i, j] = ValueCornerDownLeftCells(expansionBoard, i, j);
+							}
+
+							if (i == 0 && j == expansionBoard.GetLength(1) - 1) // Esquina superior derecha (en este caso [0,7])
+							{
+								board[i, j] = ValueCornerTopRightCells(expansionBoard, i, j);
+							}
+
+							if (i == expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1) // Esquina inferior derecha (en este caso [2,7])
+							{
+								board[i, j] = ValueCornerDownRightCells(expansionBoard, i, j);
+							}
+
+							if (i == 0 && j != expansionBoard.GetLength(1) - 1 && i == 0 && j != 0)
+							{
+								board[i, j] = ValueTopDifferentCorners(expansionBoard, i, j); // Valor de la linea superior quitando las esquinas en este caso desde [0,1] hasta [0,n-1]
+							}
+
+							if (i == expansionBoard.GetLength(0) - 1 && j != 0 && i == expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1) // Valor de la linea inferior quitando las esquinas en este caso [2,1] hasta [2,n-1];
+							{
+								board[i, j] = ValueBottomDifferentCorners(expansionBoard, i, j);
+							}
+
+							if (i != 0 && j == 0 && i != expansionBoard.GetLength(0) - 1 && j == 0) // Valores para [1,0] hasta [n-1,0]
+							{
+								board[i, j] = ValueLeftDifferentCorners(expansionBoard, i, j);
+							}
+
+							if (i != 0 && j == expansionBoard.GetLength(1) - 1 && i != expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1)// Valores para la ultima columna
+							{
+								board[i, j] = ValueRightDifferentCorners(expansionBoard, i, j);
+							}
+
+							if (i != 0 && j != 0 && i != expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1) // Valores para medio del tablero
+							{
+								board[i, j] = ValueMidBoardDifferentCornersAndDifferentSides(expansionBoard, i, j);
+							}
 						}
 					}
 				}
-
 				expansionBoard = board;
 				countGeneration++;
 			}
@@ -179,27 +211,6 @@ namespace Conway // Note: actual namespace depends on the project name.
 			} while (reduced);
 
 			return board;
-		}
-		private static int CountNeighbors(int[,] board, int row, int col)
-		{
-			int count = 0;
-			int rows = board.GetLength(0);
-			int cols = board.GetLength(1);
-
-			for (int i = -1; i <= 1; i++)
-			{
-				for (int j = -1; j <= 1; j++)
-				{
-					if (i == 0 && j == 0) continue; // Ignora la célula misma
-					int newRow = row + i;
-					int newCol = col + j;
-					if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols)
-					{
-						count += board[newRow, newCol];
-					}
-				}
-			}
-			return count;
 		}
 
 		public static int ValueCornerTopLeftCells(int[,] expansionBoard, int valueI, int valueJ)
