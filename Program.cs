@@ -186,9 +186,8 @@ namespace Conway // Note: actual namespace depends on the project name.
 					}
 					board = temporalBoard;
 				}
-				countGeneration++;
 
-			}
+			} while (reduced);
 			return board;
 		}
 
