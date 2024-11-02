@@ -119,39 +119,78 @@ namespace Conway // Note: actual namespace depends on the project name.
 			int newRows = Math.Max(0, bottom - top + 1); //Calcula la cantidad de filas que quedan entre los limites top y bot incluyendo ambos.
 			int newCols = Math.Max(0, right - left + 1);
 
-			// Crear nuevo array reducido
-			int[,] reduced = new int[newRows, newCols];
-			for (int i = 0; i < newRows; i++)
-			{
-				for (int j = 0; j < newCols; j++)
-				{
-					reduced[i, j] = board[top + i, left + j];/*Se asignan los valores del tablero original al nuevo.
-					                                          top+i,left+j permiten acceder a las celdas correctas del array original y copiarlas en el nueov.
-															  */
+						if (i != 0 && j != 0 && i != expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1) // Valores para medio del tablero
+						{
+							board[i, j] = ValueMidBoardDifferentCornersAndDifferentSides(expansionBoard, i, j);
+						}
+					}
 				}
+				expansionBoard = board;
+				countGeneration++;
 			}
-
-			return reduced;
-		}
-
-		private static bool IsRowEmpty(int[,] board, int row)
-		{
-			for (int col = 0; col < board.GetLength(1); col++)
+			bool reduced;
+			do
 			{
-				if (board[row, col] == 1) return false;
-			}
-			return true;
-		}
+				reduced = false;
+				int countColumnFirst = 0;
+				int countColumnLast = 0;
+				int countRowUp = 0;
+				int countRowDown = 0;
 
-		private static bool IsColumnEmpty(int[,] board, int col)
-		{
-			for (int row = 0; row < board.GetLength(0); row++)
-			{
-				if (board[row, col] == 1) return false;
-			}
-			return true;
-		}
+				// Verificar si la primera o última fila está llena de ceros
+				for (int i = 0; i < board.GetLength(0); i++)
+				{
+					//Comprobamos la primera fila y la última.
+					if (board[i, 0] == 0 || board[i, board.GetLength(1) - 1] == 0)
+					{
+						lessRowBoard = true;
+						break;
+					}
+				}
 
+				for (int j = 0; j < board.GetLength(1); j++)
+				{
+					//Comprobamos la primera columna y la ultima
+					if (board[0, j] == 0 || board[board.GetLength(0) - 1, j] == 0)
+					{
+						lessColBoard = true;
+						break;
+					}
+				}
+
+				if (lessRowBoard) //Si es true, significa que contiene valores 0 y es por ello que quitamos 2 a las filas.
+				{
+					var temporalBoard = new int[board.GetLength(0) - 2, board.GetLength(1)];
+					//Pasamos el contenido del nuevo array creado de forma temporal al array de board y al finalizar igualamos su contenido.
+
+					for (int i = 0; i < temporalBoard.GetLength(0) - 1; i++)
+					{
+						for (int j = 0; j < temporalBoard.GetLength(1); j++)
+						{
+							temporalBoard[i + 1, j] = board[i, j];
+						}
+					}
+					board = temporalBoard;
+				}
+
+				if (lessColBoard) //Hacemos exactamente lo mismo con las columnas
+				{
+					var temporalBoard = new int[board.GetLength(0), board.GetLength(1) - 2];
+
+					for (int i = 0; i < temporalBoard.GetLength(0); i++)
+					{
+						for (int j = 0; j < temporalBoard.GetLength(1) - 1; j++)
+						{
+							temporalBoard[i, j + 1] = board[i, j];
+						}
+					}
+					board = temporalBoard;
+				}
+				countGeneration++;
+
+			}
+			return board;
+		}
 
 		public static int ValueCornerTopLeftCells(int[,] expansionBoard, int valueI, int valueJ)
 		{
