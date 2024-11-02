@@ -11,11 +11,11 @@ namespace Conway // Note: actual namespace depends on the project name.
 		{
 			int[,] cells =
 			{
-			{1,0,0},
-			{0,1,1},
-			{1,1,1}
+			 {1,1,1,0,0,0,1,0},
+			{1,0,0,0,0,0,0,1},
+			{0,1,0,0,0,1,1,1}
 			};
-			int generation = 1;
+			int generation = 16;
 			int[,] expected = GetGeneration(cells, generation);
 			for (int i = 0; i < expected.GetLength(0); i++)
 			{
@@ -28,190 +28,130 @@ namespace Conway // Note: actual namespace depends on the project name.
 		}
 		public static int[,] GetGeneration(int[,] cells, int generation)
 		{
-			int[,] expected = new int[cells.GetLength(0), cells.GetLength(1)];
-			int[,] expansionBoard = new int[cells.GetLength(0), cells.GetLength(1)];
-			int[,] board = new int[cells.GetLength(0), cells.GetLength(1)];
-			int countGeneration = 0;
-			expansionBoard = cells;
-			//En caso de que no nos pasen ninguna generación devolvemos el array tal cual nos ha llegado.
+			// Inicializar la matriz de celdas iniciales.
+			int[,] board = cells;
+
+			// Si no hay generaciones, retornar las celdas iniciales.
 			if (generation == 0)
 			{
 				return cells;
 			}
-			while (countGeneration < generation)
-			{
-				board = expansionBoard;
-				//Añadimos 2 filas y columnas al inicio de la generacion.
-				expansionBoard = new int[expansionBoard.GetLength(0) + 2, expansionBoard.GetLength(1) + 2];
-				//Recorremos el array lleno de 0 para implementar los valores del otro array en medio del tablero.
-				for (int i = 0; i < expansionBoard.GetLength(0); i++)
-				{
-					for (int j = 0; j < expansionBoard.GetLength(1); j++)
-					{
-						//Comprobamos que se encuentren en el centro del array, fuera de las esquinas y de la primera y ultima fila.
-						if (i != 0 && j != 0 && i != expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1)
-						{
-							expansionBoard[i, j] = board[i - 1, j - 1]; //En expansionBoard en la primera iteración, cuando lleguemos a [1,1] - copiamos el valor de board[0,0].
-						}
-					}
-				}
 
-				board = new int[expansionBoard.GetLength(0), expansionBoard.GetLength(1)]; //Agrandamos el contenido de Board para que sea el mismo que expansion. Y se llena de 0.
-				/*Rellenamos el array de board con el contenido de expansionBoard, aplicando las reglas de ConwayLife.
-				 De esta forma rellenamos el array board pasando el contenido de expansionBoard.*/
+			for (int countGeneration = 0; countGeneration < generation; countGeneration++)
+			{
+				int[,] expansionBoard = new int[board.GetLength(0) + 2, board.GetLength(1) + 2];
+
+				// Copiar el contenido del board en el centro de la expansionBoard
 				for (int i = 0; i < board.GetLength(0); i++)
 				{
 					for (int j = 0; j < board.GetLength(1); j++)
 					{
-						if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
+						expansionBoard[i + 1, j + 1] = board[i, j];
+					}
+				}
+
+				// Crear un nuevo board para la siguiente generación
+				board = new int[expansionBoard.GetLength(0), expansionBoard.GetLength(1)];
+
+				// Aplicar las reglas de Conway
+				for (int i = 0; i < expansionBoard.GetLength(0); i++)
+				{
+					for (int j = 0; j < expansionBoard.GetLength(1); j++)
+					{
+						int neighbors = CountNeighbors(expansionBoard, i, j);
+
+						if (expansionBoard[i, j] == 1) // Célula viva
 						{
-							if (i == 0 && j == 0) //Esquina superior izquierda [0,0]
-							{
-								board[i, j] = ValueCornerTopLeftCells(expansionBoard, i, j);
-							}
-
-							if (i == expansionBoard.GetLength(0) - 1 && j == 0) // Esquina inferior izquierda (en este caso [2,0] )
-							{
-								board[i, j] = ValueCornerDownLeftCells(expansionBoard, i, j);
-							}
-
-							if (i == 0 && j == expansionBoard.GetLength(1) - 1) // Esquina superior derecha (en este caso [0,7])
-							{
-								board[i, j] = ValueCornerTopRightCells(expansionBoard, i, j);
-							}
-
-							if (i == expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1) // Esquina inferior derecha (en este caso [2,7])
-							{
-								board[i, j] = ValueCornerDownRightCells(expansionBoard, i, j);
-							}
-
-							if (i == 0 && j != expansionBoard.GetLength(1) - 1 && i == 0 && j != 0)
-							{
-								board[i, j] = ValueTopDifferentCorners(expansionBoard, i, j); // Valor de la linea superior quitando las esquinas en este caso desde [0,1] hasta [0,n-1]
-							}
-
-							if (i == expansionBoard.GetLength(0) - 1 && j != 0 && i == expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1) // Valor de la linea inferior quitando las esquinas en este caso [2,1] hasta [2,n-1];
-							{
-								board[i, j] = ValueBottomDifferentCorners(expansionBoard, i, j);
-							}
-
-							if (i != 0 && j == 0 && i != expansionBoard.GetLength(0) - 1 && j == 0) // Valores para [1,0] hasta [n-1,0]
-							{
-								board[i, j] = ValueLeftDifferentCorners(expansionBoard, i, j);
-							}
-
-							if (i != 0 && j == expansionBoard.GetLength(1) - 1 && i != expansionBoard.GetLength(0) - 1 && j == expansionBoard.GetLength(1) - 1)// Valores para la ultima columna
-							{
-								board[i, j] = ValueRightDifferentCorners(expansionBoard, i, j);
-							}
-
-							if (i != 0 && j != 0 && i != expansionBoard.GetLength(0) - 1 && j != expansionBoard.GetLength(1) - 1) // Valores para medio del tablero
-							{
-								board[i, j] = ValueMidBoardDifferentCornersAndDifferentSides(expansionBoard, i, j);
-							}
+							board[i, j] = (neighbors < 2 || neighbors > 3) ? 0 : 1; // Muere o sobrevive
+							/*if (neighbors < 2 || neighbors > 3) board[i,j] = 0;
+							else board[i, j] = 1;*/
+						}
+						else // Célula muerta
+						{
+							board[i, j] = (neighbors == 3) ? 1 : 0; // Se vuelve viva o se mantiene muerta
 						}
 					}
 				}
-				expansionBoard = board;
-				countGeneration++;
+				// Reducir el tamaño del array eliminando filas y columnas vacías
+				board = ReduceBoard(board);
 			}
-
-			bool reduced;
-			do
-			{
-				reduced = false;
-				int countColumnFirst = 0;
-				int countColumnLast = 0;
-				int countRowUp = 0;
-				int countRowDown = 0;
-
-				// Verificar si la primera o última fila está llena de ceros
-				for (int i = 0; i < board.GetLength(0); i++)
-				{
-					if (board[i, 0] == 0) countRowUp++;
-					if (board[i, board.GetLength(1) - 1] == 0) countRowDown++;
-				}
-
-				// Verificar si la primera o última columna está llena de ceros
-				for (int j = 0; j < board.GetLength(1); j++)
-				{
-					if (board[0, j] == 0) countColumnFirst++;
-					if (board[board.GetLength(0) - 1, j] == 0) countColumnLast++;
-				}
-
-				// Eliminar filas si están llenas de ceros
-				if (countRowUp == board.GetLength(0))
-				{
-					// Reduce el tamaño del array temporalmente
-					int[,] temporalArray = new int[board.GetLength(0) - 1, board.GetLength(1)];
-					for (int i = 1; i < board.GetLength(0); i++)
-					{
-						for (int j = 0; j < board.GetLength(1); j++)
-						{
-							if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
-							{
-								temporalArray[i - 1, j] = board[i, j];
-							}
-						}
-					}
-					board = temporalArray;
-					reduced = true;
-				}
-				if (countRowDown == board.GetLength(0))
-				{
-					int[,] temporalArray = new int[board.GetLength(0) - 1, board.GetLength(1)];
-					for (int i = 0; i < board.GetLength(0) - 1; i++)
-					{
-						for (int j = 0; j < board.GetLength(1); j++)
-						{
-							if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
-							{
-								temporalArray[i, j] = board[i, j];
-							}
-						}
-					}
-					board = temporalArray;
-					reduced = true;
-				}
-
-				// Eliminar columnas si están llenas de ceros
-				if (countColumnFirst == board.GetLength(1))
-				{
-					int[,] temporalArray = new int[board.GetLength(0), board.GetLength(1) - 1];
-					for (int i = 0; i < board.GetLength(0); i++)
-					{
-						for (int j = 1; j < board.GetLength(1); j++)
-						{
-							if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
-							{
-								temporalArray[i, j - 1] = board[i, j];
-							}
-						}
-					}
-					board = temporalArray;
-					reduced = true;
-				}
-				if (countColumnLast == board.GetLength(1))
-				{
-					int[,] temporalArray = new int[board.GetLength(0), board.GetLength(1) - 1];
-					for (int i = 0; i < board.GetLength(0); i++)
-					{
-						for (int j = 0; j < board.GetLength(1) - 1; j++)
-						{
-							if (i >= 0 && i < board.GetLength(0) && j >= 0 && j < board.GetLength(1))
-							{
-								temporalArray[i, j] = board[i, j];
-							}
-						}
-					}
-					board = temporalArray;
-					reduced = true;
-				}
-
-			} while (reduced);
 
 			return board;
 		}
+		private static int CountNeighbors(int[,] board, int row, int col) // row es valor de i, col es valor de j
+		{
+			int count = 0;
+			int rows = board.GetLength(0);
+			int cols = board.GetLength(1);
+
+			for (int i = -1; i <= 1; i++) //con el -1 miramos las superiores Y el valor de 1 las inferiores.
+			{
+				for (int j = -1; j <= 1; j++)
+				{
+					if (i == 0 && j == 0) continue; // Ignora la célula misma
+					int newRow = row + i;
+					int newCol = col + j;
+					if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols)
+					{
+						count += board[newRow, newCol]; //Cuenta el numero total de vecinos vivos y es por ello el +=.
+					}
+				}
+			}
+			return count;
+		}
+
+		private static int[,] ReduceBoard(int[,] board)
+		{
+			int rows = board.GetLength(0);
+			int cols = board.GetLength(1);
+
+			// Verificar si se pueden eliminar filas o columnas
+			int top = 0, bottom = rows - 1, left = 0, right = cols - 1;
+
+			// Encontrar límites que contienen celdas vivas
+			while (top < rows && IsRowEmpty(board, top)) top++;
+			//Verifica si la fila actual TOP esta vacía mediante RowEmpty.Se incrementa top para verificar la siguiente fila hacia abjo.El proceso sigue hasta que se encuentra una fila que contiene almenos 1 celula viva o el finl del tablero
+			while (bottom >= 0 && IsRowEmpty(board, bottom)) bottom--;
+			while (left < cols && IsColumnEmpty(board, left)) left++;
+			while (right >= 0 && IsColumnEmpty(board, right)) right--;
+
+			// Determinar nuevas dimensiones
+			int newRows = Math.Max(0, bottom - top + 1); //Calcula la cantidad de filas que quedan entre los limites top y bot incluyendo ambos.
+			int newCols = Math.Max(0, right - left + 1);
+
+			// Crear nuevo array reducido
+			int[,] reduced = new int[newRows, newCols];
+			for (int i = 0; i < newRows; i++)
+			{
+				for (int j = 0; j < newCols; j++)
+				{
+					reduced[i, j] = board[top + i, left + j];/*Se asignan los valores del tablero original al nuevo.
+					                                          top+i,left+j permiten acceder a las celdas correctas del array original y copiarlas en el nueov.
+															  */
+				}
+			}
+
+			return reduced;
+		}
+
+		private static bool IsRowEmpty(int[,] board, int row)
+		{
+			for (int col = 0; col < board.GetLength(1); col++)
+			{
+				if (board[row, col] == 1) return false;
+			}
+			return true;
+		}
+
+		private static bool IsColumnEmpty(int[,] board, int col)
+		{
+			for (int row = 0; row < board.GetLength(0); row++)
+			{
+				if (board[row, col] == 1) return false;
+			}
+			return true;
+		}
+
 
 		public static int ValueCornerTopLeftCells(int[,] expansionBoard, int valueI, int valueJ)
 		{
