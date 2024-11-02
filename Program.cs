@@ -187,7 +187,89 @@ namespace Conway // Note: actual namespace depends on the project name.
 					board = temporalBoard;
 				}
 
+			}
+			bool reduced;
+			do
+			{
+				reduced = false;
+				int countColumnFirst = 0;
+				int countColumnLast = 0;
+				int countRowUp = 0;
+				int countRowDown = 0;
+
+				// Verificar si la primera o última fila está llena de ceros
+				for (int i = 0; i < board.GetLength(0); i++)
+				{
+					if (board[i, 0] == 0) countRowUp++;
+					if (board[i, board.GetLength(1) - 1] == 0) countRowDown++;
+				}
+
+				// Verificar si la primera o última columna está llena de ceros
+				for (int j = 0; j < board.GetLength(1); j++)
+				{
+					if (board[0, j] == 0) countColumnFirst++;
+					if (board[board.GetLength(0) - 1, j] == 0) countColumnLast++;
+				}
+
+				// Eliminar filas si están llenas de ceros
+				if (countRowUp == board.GetLength(0))
+				{
+					// Reduce el tamaño del array temporalmente
+					int[,] temporalArray = new int[board.GetLength(0) - 1, board.GetLength(1)];
+					for (int i = 1; i < board.GetLength(0); i++)
+					{
+						for (int j = 0; j < board.GetLength(1); j++)
+						{
+							temporalArray[i - 1, j] = board[i, j];
+						}
+					}
+					board = temporalArray;
+					reduced = true;
+				}
+				if (countRowDown == board.GetLength(0))
+				{
+					int[,] temporalArray = new int[board.GetLength(0) - 1, board.GetLength(1)];
+					for (int i = 0; i < board.GetLength(0) - 1; i++)
+					{
+						for (int j = 0; j < board.GetLength(1); j++)
+						{
+							temporalArray[i, j] = board[i, j];
+						}
+					}
+					board = temporalArray;
+					reduced = true;
+				}
+
+				// Eliminar columnas si están llenas de ceros
+				if (countColumnFirst == board.GetLength(1))
+				{
+					int[,] temporalArray = new int[board.GetLength(0), board.GetLength(1) - 1];
+					for (int i = 0; i < board.GetLength(0); i++)
+					{
+						for (int j = 1; j < board.GetLength(1); j++)
+						{
+							temporalArray[i, j - 1] = board[i, j];
+						}
+					}
+					board = temporalArray;
+					reduced = true;
+				}
+				if (countColumnLast == board.GetLength(1))
+				{
+					int[,] temporalArray = new int[board.GetLength(0), board.GetLength(1) - 1];
+					for (int i = 0; i < board.GetLength(0); i++)
+					{
+						for (int j = 0; j < board.GetLength(1) - 1; j++)
+						{
+							temporalArray[i, j] = board[i, j];
+						}
+					}
+					board = temporalArray;
+					reduced = true;
+				}
+
 			} while (reduced);
+
 			return board;
 		}
 
